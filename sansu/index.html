@@ -3303,10 +3303,19 @@
           { n: 3, pts: [[20, 14], [82, 24], [38, 76]] },
           { n: 4, pts: [[26, 14], [70, 14], [86, 72], [10, 72]] },
           { n: 3, pts: [[56, 12], [14, 68], [84, 74]] },
-          { n: 4, pts: [[16, 22], [80, 12], [74, 74], [22, 70]] }
+          { n: 4, pts: [[16, 22], [80, 12], [74, 74], [22, 70]] },
+          { n: 3, pts: [[48, 10], [82, 74], [14, 74]] },
+          { n: 4, pts: [[12, 20], [84, 20], [84, 66], [12, 66]] },
+          { n: 3, pts: [[14, 16], [84, 40], [26, 76]] },
+          { n: 4, pts: [[48, 8], [86, 42], [48, 78], [10, 42]] },
+          { n: 3, pts: [[16, 72], [16, 14], [84, 72]] },
+          { n: 4, pts: [[30, 14], [66, 14], [86, 72], [12, 72]] },
+          { n: 3, pts: [[70, 10], [86, 76], [10, 56]] },
+          { n: 4, pts: [[20, 12], [76, 22], [84, 70], [12, 62]] }
         ];
-        const itemsHtml = shapes.map((_, idx) => {
-          const sh = idx === 0 ? shapes[0] : shapes[((s + idx) % (shapes.length - 1)) + 1];
+        // 1枚に 6問（れい＋5問）。図形の候補から 種（s）で えらぶ
+        const itemsHtml = shapes.slice(0, 6).map((_, idx) => {
+          const sh = idx === 0 ? shapes[0] : shapes[((s * 2 + idx) % (shapes.length - 1)) + 1];
           const n = sh.n;
           const isRei = idx === 0;
           const showDots = isRei || level === 'step1' || level === 'step2';
@@ -3387,12 +3396,19 @@
 
       if (unit === 'shape_box') {
         const title = 'はこの かたち（めん・へん・ちょうてん）';
-        const items = [
-          { q: 'めん（平らな ところ）の 数', ans: 6, unit: 'こ', subText: 'うえ・した 2こ ＋ まわり', subVal: 4, subUnit: 'こ', isRei: true },
-          { q: 'へん（まじわる 直線）の 数', ans: 12, unit: 'ほん', subText: '4ほん ×', subVal: 3, subUnit: '組', isRei: false },
-          { q: 'ちょうてん（かどの 点）の 数', ans: 8, unit: 'こ', subText: 'うえ 4こ ＋ した', subVal: 4, subUnit: 'こ', isRei: false },
-          { q: 'さいころの 形の めんは、すべて 何という 四角形？', ans: '正方形', isText: true, subText: '4つの へんが 同じ：', subVal: '正', subUnit: '方形', isRei: false }
+        const pool = [
+          { q: 'へん（まじわる 直線）の 数', ans: 12, unit: 'ほん', subText: '4ほん ×', subVal: 3, subUnit: '組' },
+          { q: 'ちょうてん（かどの 点）の 数', ans: 8, unit: 'こ', subText: 'うえ 4こ ＋ した', subVal: 4, subUnit: 'こ' },
+          { q: 'さいころの 形の めんは、すべて 何という 四角形？', ans: '正方形', isText: true, subText: '4つの へんが 同じ：', subVal: '正', subUnit: '方形' },
+          { q: 'おなじ 形の めんは いくつずつ ある？', ans: 2, unit: 'こずつ', subText: 'めん 6こを', subVal: 3, subUnit: '組に わける' },
+          { q: 'おなじ 長さの へんは 何本ずつ ある？', ans: 4, unit: 'ほんずつ', subText: 'へん 12本を', subVal: 3, subUnit: 'しゅるいに わける' },
+          { q: 'ひごで はこの 形を 作る。ひごは 何本 いる？', ans: 12, unit: 'ほん', subText: '4ほん ×', subVal: 3, subUnit: '組' },
+          { q: 'ねんど玉で ひごを つなぐ。ねんど玉は 何こ いる？', ans: 8, unit: 'こ', subText: 'うえ 4こ ＋ した', subVal: 4, subUnit: 'こ' },
+          { q: 'はこの めんは どんな 四角形？（さいころ いがい）', ans: '長方形', isText: true, subText: 'かどが ぜんぶ', subVal: '直', subUnit: '角' }
         ];
+        // れいの あとに、問題の種（s）で えらんだ 3問を ならべる（1枚の中で 同じ問題は 出さない）
+        const items = [{ q: 'めん（平らな ところ）の 数', ans: 6, unit: 'こ', subText: 'うえ・した 2こ ＋ まわり', subVal: 4, subUnit: 'こ', isRei: true }];
+        for (let i = 1; i <= 3; i++) items.push({ ...pool[(s * 2 + i) % pool.length], isRei: false });
         const itemsHtml = items.map((it, idx) => {
           const showHelper = it.isRei || level === 'step1' || level === 'step2';
           const traceSub = it.isRei || level === 'step1';
@@ -6079,20 +6095,27 @@
           { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう辺が 平行' },
           { type: 'rhom', pairs: 2, name: 'ひし形', desc: '4つの辺が すべて同じ長さ' },
           { type: 'trap', pairs: 1, name: '台形', desc: '1組の辺が 平行' },
-          { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう角が 同じ大きさ' }
+          { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう角が 同じ大きさ' },
+          { type: 'trap', pairs: 1, name: '台形', desc: '上と下の辺だけが 平行', poly: '12,14 60,14 88,58 12,58' },
+          { type: 'rect', pairs: 2, name: '長方形', desc: '4つの角が すべて直角', poly: '12,14 88,14 88,58 12,58' },
+          { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう辺の 長さが 同じ', poly: '12,14 70,14 88,58 30,58' },
+          { type: 'sq', pairs: 2, name: '正方形', desc: '4つの辺が同じで 角が直角', poly: '24,6 84,6 84,66 24,66' },
+          { type: 'rhom', pairs: 2, name: 'ひし形', desc: '4つの辺が すべて同じ長さ', poly: '38,20 78,20 54,52 14,52' },
+          { type: 'trap', pairs: 1, name: '台形', desc: '1組の辺だけが 平行', poly: '38,14 64,14 92,58 8,58' }
         ];
         const list = [
           { type: 'trap', pairs: 1, name: '台形', desc: '1組の辺が 平行', isRei: true },
-          { ...cand[(s + 0) % cand.length], isRei: false },
-          { ...cand[(s + 1) % cand.length], isRei: false },
-          { ...cand[(s + 2) % cand.length], isRei: false }
+          { ...cand[(s * 2 + 0) % cand.length], isRei: false },
+          { ...cand[(s * 2 + 1) % cand.length], isRei: false },
+          { ...cand[(s * 2 + 2) % cand.length], isRei: false }
         ];
         const itemsHtml = list.map((it, idx) => {
           const tracePairs = it.isRei || level === 'step1';
           const traceName = it.isRei;
           const showDesc = it.isRei || level !== 'step3';
           let poly = '';
-          if (it.type === 'trap') poly = '28,14 72,14 90,58 12,58';
+          if (it.poly) poly = it.poly;
+          else if (it.type === 'trap') poly = '28,14 72,14 90,58 12,58';
           else if (it.type === 'para') poly = '28,14 90,14 72,58 10,58';
           else poly = '50,8 88,36 50,64 12,36';
           return `
@@ -6117,12 +6140,20 @@
       // 【4年⑪】直方体と 立方体（見取図・展開図と 面・辺の 数）
       if (unit === 'g4_cuboid') {
         const title = '直方体と 立方体（見取図と 展開図・面や辺の 関係）';
-        const items = [
-          { q: 'さいころのように 正方形だけで 囲まれた 形', subLabel: '面の数：', subVal: 6, subUnit: 'こ', ans: '立方体', isText: true, isRei: true },
-          { q: '長方形（や正方形）で 囲まれた 箱の 形', subLabel: '頂点の数：', subVal: 8, subUnit: 'こ', ans: '直方体', isText: true, isRei: false },
-          { q: '直方体の 辺（直線）は ぜんぶで 何本？', subLabel: '4本 ×', subVal: 3, subUnit: '組', ans: 12, unit: '本', isText: false, isRei: false },
-          { q: '1つの 面と 垂直に 交わる 辺は 何本？', subLabel: 'かどの 点が', subVal: 4, subUnit: 'こ', ans: 4, unit: '本', isText: false, isRei: false }
+        const pool = [
+          { q: '長方形（や正方形）で 囲まれた 箱の 形', subLabel: '頂点の数：', subVal: 8, subUnit: 'こ', ans: '直方体', isText: true },
+          { q: '直方体の 辺（直線）は ぜんぶで 何本？', subLabel: '4本 ×', subVal: 3, subUnit: '組', ans: 12, unit: '本', isText: false },
+          { q: '1つの 面と 垂直に 交わる 辺は 何本？', subLabel: 'かどの 点が', subVal: 4, subUnit: 'こ', ans: 4, unit: '本', isText: false },
+          { q: '直方体の 面は ぜんぶで いくつ？', subLabel: '向かいあう 面が', subVal: 3, subUnit: '組', ans: 6, unit: 'こ', isText: false },
+          { q: '直方体の 頂点は ぜんぶで いくつ？', subLabel: '上に 4こ ＋ 下に', subVal: 4, subUnit: 'こ', ans: 8, unit: 'こ', isText: false },
+          { q: '1つの 面に 平行な 面は いくつ？', subLabel: '6つの 面は', subVal: 3, subUnit: '組の 向かいあう面', ans: 1, unit: 'こ', isText: false },
+          { q: '1つの 面に 垂直な 面は いくつ？', subLabel: '自分と 向かいあう面を のぞく：6 －', subVal: 2, subUnit: '', ans: 4, unit: 'こ', isText: false },
+          { q: '1つの 辺に 平行な 辺は（自分の ほかに）何本？', subLabel: '同じ向きの 辺は ぜんぶで', subVal: 4, subUnit: '本', ans: 3, unit: '本', isText: false },
+          { q: '立方体の 面は どんな 形？', subLabel: '4つの 辺が すべて', subVal: '同じ', subUnit: '長さ', ans: '正方形', isText: true }
         ];
+        // れいの あとに、問題の種（s）で えらんだ 3問を ならべる（1枚の中で 同じ問題は 出さない）
+        const items = [{ q: 'さいころのように 正方形だけで 囲まれた 形', subLabel: '面の数：', subVal: 6, subUnit: 'こ', ans: '立方体', isText: true, isRei: true }];
+        for (let i = 1; i <= 3; i++) items.push({ ...pool[(s * 2 + i) % pool.length], isRei: false });
         const itemsHtml = items.map((it, idx) => {
           const traceSub = it.isRei || level === 'step1';
           const traceAns = it.isRei;
@@ -7994,15 +8025,33 @@ function addG6Units(unit, level, s, pageLabel) {
 
   // 7. 線対称な 図形
   if (unit === 'g6_symmetry_line') {
-    const title = '線対称な 図形（対称の軸と 対応する点・辺）';
+    const title = '線対称な 図形（対称の軸と 対応する点）';
+    // 図形の頂点（対称の軸 アイ は どれも x=70 の たての線）
+    const SHAPES = {
+      '二等辺三角形': { A: [70, 12], B: [28, 96], C: [112, 96] },
+      '正三角形': { A: [70, 14], B: [24, 94], C: [116, 94] },
+      '正方形': { A: [32, 17], B: [32, 93], C: [108, 93], D: [108, 17] },
+      '長方形': { A: [16, 27], B: [16, 83], C: [124, 83], D: [124, 27] },
+      'ひし形': { A: [70, 8], B: [28, 55], C: [70, 102], D: [112, 55] },
+      '正五角形': { A: [70, 10], B: [27, 41], C: [43, 92], D: [97, 92], E: [113, 41] },
+      '正六角形': { A: [70, 10], B: [31, 32.5], C: [31, 77.5], D: [70, 100], E: [109, 77.5], F: [109, 32.5] }
+    };
+    const AXES = { '二等辺三角形': 1, '正三角形': 3, '正方形': 4, '長方形': 2, 'ひし形': 2, '正五角形': 5, '正六角形': 6 };
     const cand = [
-      { shape: '二等辺三角形', ptA: '点B', ptB: '点C', sideA: '辺AB', sideB: '辺AC', numAxis: 1 },
-      { shape: '正方形', ptA: '点A', ptB: '点D', sideA: '辺AB', sideB: '辺DC', numAxis: 4 },
-      { shape: 'ひし形', ptA: '点B', ptB: '点D', sideA: '辺AB', sideB: '辺AD', numAxis: 2 },
-      { shape: '正三角形', ptA: '点B', ptB: '点C', sideA: '辺AB', sideB: '辺AC', numAxis: 3 },
-      { shape: '長方形', ptA: '点A', ptB: '点B', sideA: '辺AD', sideB: '辺BC', numAxis: 2 }
+      { shape: '正三角形', ptA: '点B', ptB: '点C' },
+      { shape: '正方形', ptA: '点A', ptB: '点D' },
+      { shape: '長方形', ptA: '点A', ptB: '点D' },
+      { shape: 'ひし形', ptA: '点B', ptB: '点D' },
+      { shape: '正五角形', ptA: '点B', ptB: '点E' },
+      { shape: '正六角形', ptA: '点B', ptB: '点F' },
+      { shape: '正三角形', ptA: '点C', ptB: '点B' },
+      { shape: '正方形', ptA: '点B', ptB: '点C' },
+      { shape: '長方形', ptA: '点C', ptB: '点B' },
+      { shape: 'ひし形', ptA: '点D', ptB: '点B' },
+      { shape: '正五角形', ptA: '点C', ptB: '点D' },
+      { shape: '正六角形', ptA: '点C', ptB: '点E' }
     ];
-    const list = [{ shape: '二等辺三角形', ptA: '点B', ptB: '点C', sideA: '辺AB', sideB: '辺AC', numAxis: 1, isRei: true }];
+    const list = [{ shape: '二等辺三角形', ptA: '点B', ptB: '点C', isRei: true }];
     const filteredCand = cand.filter(c => {
       const rei = list[0];
       const keys = Object.keys(rei).filter(k => k !== 'isRei');
@@ -8011,23 +8060,51 @@ function addG6Units(unit, level, s, pageLabel) {
     for (let i = 1; i <= 3; i++) {
       list.push({ ...filteredCand[(s * 2 + i) % filteredCand.length], isRei: false });
     }
+    const lineSvg = (it, showHint) => {
+      const P = SHAPES[it.shape];
+      const names = Object.keys(P);
+      const cx = 70, cy = 55;
+      const poly = names.map(n => P[n].map(v => v.toFixed(1)).join(',')).join(' ');
+      const labels = names.map(n => {
+        const [x, y] = P[n];
+        const dx = x - cx, dy = y - cy, len = Math.hypot(dx, dy) || 1;
+        const lx = x + dx / len * 11, ly = y + dy / len * 11 + 4;
+        // 軸の上の点は、軸の線と文字が重ならないよう 右に ずらす
+        const onAxis = Math.abs(x - cx) < 1;
+        return `<text x="${(onAxis ? x + 9 : lx).toFixed(1)}" y="${(onAxis ? y + (dy < 0 ? 2 : 8) : ly).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#18181b">${n}</text>`;
+      }).join('');
+      const a = P[it.ptA.replace('点', '')], b = P[it.ptB.replace('点', '')];
+      // れい：対応する点どうしを結ぶ／ヒント：軸までの半分だけ
+      const guide = it.isRei
+        ? `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#71717a" stroke-width="1.2" stroke-dasharray="4 3" />`
+        : (showHint ? `<line x1="${a[0]}" y1="${a[1]}" x2="${cx}" y2="${a[1]}" stroke="#71717a" stroke-width="1.2" stroke-dasharray="4 3" />` : '');
+      return `<svg width="150" height="114" viewBox="-6 -2 152 114" style="flex-shrink:0;">
+        <polygon points="${poly}" fill="#ffffff" stroke="#18181b" stroke-width="1.8" />
+        <line x1="${cx}" y1="0" x2="${cx}" y2="110" stroke="#a1a1aa" stroke-width="1.3" stroke-dasharray="6 3 1.5 3" />
+        <text x="${cx - 8}" y="8" font-size="10" fill="#52525b" text-anchor="end">ア</text>
+        <text x="${cx - 8}" y="110" font-size="10" fill="#52525b" text-anchor="end">イ</text>
+        ${guide}
+        ${labels}
+      </svg>`;
+    };
     const itemsHtml = list.map((it, idx) => {
       const tracePart = it.isRei || level === 'step1';
       const showHint = it.isRei || level !== 'step3';
       return `
-        <div class="problem-item" style="border-bottom:1px solid #e4e4e7; width:100%; padding:9px 0;">
+        <div class="problem-item" style="border-bottom:1px solid #e4e4e7; width:100%; padding:6px 0;">
           <div class="p-num">${it.isRei ? '<span class="rei-badge">れい</span>' : `(${idx})`}</div>
-          <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-            <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
+            ${lineSvg(it, showHint)}
+            <div style="flex:1;">
               <div style="font-weight:700; margin-bottom:2px;">線対称な図形：${it.shape}</div>
-              <div style="font-size:0.85rem; color:#52525b;">${it.ptA}に対応する点は？</div>
+              <div style="font-size:0.85rem; color:#52525b;">直線アイで 折ったとき 重なる</div>
             </div>
-            <div class="eq-row" style="font-size:1.05rem; gap:10px;">
-              <div>対応する点：<span class="box sm">${cellVal(it.ptB, tracePart)}</span></div>
-              <div>対称の軸の本数：<span class="box xs">${cellVal(it.numAxis, it.isRei)}</span> 本</div>
+            <div class="eq-row" style="font-size:1.05rem; gap:10px; flex-direction:column; align-items:flex-end;">
+              <div>${it.ptA}に対応する点：<span class="box sm" style="width:58px; min-width:58px;">${cellVal(it.ptB, tracePart)}</span></div>
+              <div>対称の軸は ぜんぶで：<span class="box xs">${cellVal(AXES[it.shape], it.isRei)}</span> 本</div>
             </div>
           </div>
-          ${showHint ? `<div style="font-size:0.75rem; color:#71717a; text-align:right;">(折り目をつけたとき重なる)</div>` : ''}
+          ${showHint ? `<div style="font-size:0.75rem; color:#71717a; text-align:right;">(軸から 同じ きょりの 反対がわ)</div>` : ''}
         </div>
       `;
     }).join('');
