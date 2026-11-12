@@ -2989,7 +2989,9 @@
           { denom: 4, shape: 'bar' },
           { denom: 8, shape: 'circle' },
           { denom: 2, shape: 'bar' },
-          { denom: 8, shape: 'bar' }
+          { denom: 8, shape: 'bar' },
+          { denom: 3, shape: 'circle' },
+          { denom: 3, shape: 'bar' }
         ];
         // れい（4等分の円）と同じ問題が出ないよう、れいの組み合わせは候補に入れない
         const list = [{ denom: 4, shape: 'circle', isRei: true }];
@@ -3301,10 +3303,19 @@
           { n: 3, pts: [[20, 14], [82, 24], [38, 76]] },
           { n: 4, pts: [[26, 14], [70, 14], [86, 72], [10, 72]] },
           { n: 3, pts: [[56, 12], [14, 68], [84, 74]] },
-          { n: 4, pts: [[16, 22], [80, 12], [74, 74], [22, 70]] }
+          { n: 4, pts: [[16, 22], [80, 12], [74, 74], [22, 70]] },
+          { n: 3, pts: [[48, 10], [82, 74], [14, 74]] },
+          { n: 4, pts: [[12, 20], [84, 20], [84, 66], [12, 66]] },
+          { n: 3, pts: [[14, 16], [84, 40], [26, 76]] },
+          { n: 4, pts: [[48, 8], [86, 42], [48, 78], [10, 42]] },
+          { n: 3, pts: [[16, 72], [16, 14], [84, 72]] },
+          { n: 4, pts: [[30, 14], [66, 14], [86, 72], [12, 72]] },
+          { n: 3, pts: [[70, 10], [86, 76], [10, 56]] },
+          { n: 4, pts: [[20, 12], [76, 22], [84, 70], [12, 62]] }
         ];
-        const itemsHtml = shapes.map((_, idx) => {
-          const sh = idx === 0 ? shapes[0] : shapes[((s + idx) % (shapes.length - 1)) + 1];
+        // 1枚に 6問（れい＋5問）。図形の候補から 種（s）で えらぶ
+        const itemsHtml = shapes.slice(0, 6).map((_, idx) => {
+          const sh = idx === 0 ? shapes[0] : shapes[((s * 2 + idx) % (shapes.length - 1)) + 1];
           const n = sh.n;
           const isRei = idx === 0;
           const showDots = isRei || level === 'step1' || level === 'step2';
@@ -3385,12 +3396,19 @@
 
       if (unit === 'shape_box') {
         const title = 'はこの かたち（めん・へん・ちょうてん）';
-        const items = [
-          { q: 'めん（平らな ところ）の 数', ans: 6, unit: 'こ', subText: 'うえ・した 2こ ＋ まわり', subVal: 4, subUnit: 'こ', isRei: true },
-          { q: 'へん（まじわる 直線）の 数', ans: 12, unit: 'ほん', subText: '4ほん ×', subVal: 3, subUnit: '組', isRei: false },
-          { q: 'ちょうてん（かどの 点）の 数', ans: 8, unit: 'こ', subText: 'うえ 4こ ＋ した', subVal: 4, subUnit: 'こ', isRei: false },
-          { q: 'さいころの 形の めんは、すべて 何という 四角形？', ans: '正方形', isText: true, subText: '4つの へんが 同じ：', subVal: '正', subUnit: '方形', isRei: false }
+        const pool = [
+          { q: 'へん（まじわる 直線）の 数', ans: 12, unit: 'ほん', subText: '4ほん ×', subVal: 3, subUnit: '組' },
+          { q: 'ちょうてん（かどの 点）の 数', ans: 8, unit: 'こ', subText: 'うえ 4こ ＋ した', subVal: 4, subUnit: 'こ' },
+          { q: 'さいころの 形の めんは、すべて 何という 四角形？', ans: '正方形', isText: true, subText: '4つの へんが 同じ：', subVal: '正', subUnit: '方形' },
+          { q: 'おなじ 形の めんは いくつずつ ある？', ans: 2, unit: 'こずつ', subText: 'めん 6こを', subVal: 3, subUnit: '組に わける' },
+          { q: 'おなじ 長さの へんは 何本ずつ ある？', ans: 4, unit: 'ほんずつ', subText: 'へん 12本を', subVal: 3, subUnit: 'しゅるいに わける' },
+          { q: 'ひごで はこの 形を 作る。ひごは 何本 いる？', ans: 12, unit: 'ほん', subText: '4ほん ×', subVal: 3, subUnit: '組' },
+          { q: 'ねんど玉で ひごを つなぐ。ねんど玉は 何こ いる？', ans: 8, unit: 'こ', subText: 'うえ 4こ ＋ した', subVal: 4, subUnit: 'こ' },
+          { q: 'はこの めんは どんな 四角形？（さいころ いがい）', ans: '長方形', isText: true, subText: 'かどが ぜんぶ', subVal: '直', subUnit: '角' }
         ];
+        // れいの あとに、問題の種（s）で えらんだ 3問を ならべる（1枚の中で 同じ問題は 出さない）
+        const items = [{ q: 'めん（平らな ところ）の 数', ans: 6, unit: 'こ', subText: 'うえ・した 2こ ＋ まわり', subVal: 4, subUnit: 'こ', isRei: true }];
+        for (let i = 1; i <= 3; i++) items.push({ ...pool[(s * 2 + i) % pool.length], isRei: false });
         const itemsHtml = items.map((it, idx) => {
           const showHelper = it.isRei || level === 'step1' || level === 'step2';
           const traceSub = it.isRei || level === 'step1';
@@ -4366,7 +4384,14 @@
             { type: 'equi', a: 6, b: 6, c: 6, name: '正', angleCnt: 3 },
             { type: 'iso', a: 4, b: 4, c: 3, name: '二等辺', angleCnt: 2 },
             { type: 'equi', a: 7, b: 7, c: 7, name: '正', angleCnt: 3 },
-            { type: 'iso', a: 8, b: 8, c: 5, name: '二等辺', angleCnt: 2 }
+            { type: 'iso', a: 8, b: 8, c: 5, name: '二等辺', angleCnt: 2 },
+            { type: 'iso', a: 5, b: 5, c: 4, name: '二等辺', angleCnt: 2 },
+            { type: 'equi', a: 3, b: 3, c: 3, name: '正', angleCnt: 3 },
+            { type: 'iso', a: 6, b: 6, c: 5, name: '二等辺', angleCnt: 2 },
+            { type: 'equi', a: 8, b: 8, c: 8, name: '正', angleCnt: 3 },
+            { type: 'iso', a: 9, b: 9, c: 6, name: '二等辺', angleCnt: 2 },
+            { type: 'equi', a: 9, b: 9, c: 9, name: '正', angleCnt: 3 },
+            { type: 'iso', a: 7, b: 7, c: 4, name: '二等辺', angleCnt: 2 }
           ];
           for (let i = 1; i <= 3; i++) {
             list[i] = { ...cand[(s + i) % cand.length], isRei: false };
@@ -4436,7 +4461,15 @@
           const cand = [
             { r: 7, isGivenR: true }, { r: 8, isGivenR: false },
             { r: 2, isGivenR: true }, { r: 6, isGivenR: false },
-            { r: 9, isGivenR: true }, { r: 5, isGivenR: false }
+            { r: 9, isGivenR: true }, { r: 5, isGivenR: false },
+            { r: 3, isGivenR: false },
+            { r: 4, isGivenR: true },
+            { r: 10, isGivenR: true },
+            { r: 7, isGivenR: false },
+            { r: 9, isGivenR: false },
+            { r: 12, isGivenR: true },
+            { r: 15, isGivenR: false },
+            { r: 11, isGivenR: true }
           ];
           for (let i = 1; i <= 3; i++) {
             list[i] = { ...cand[(s + i) % cand.length], isRei: false };
@@ -4508,7 +4541,14 @@
           const cand = [
             { deg: 35, label: '直角より 小さい' }, { deg: 130, label: '直角より 大きい' },
             { deg: 90, label: '直角と おなじ' }, { deg: 60, label: '直角より 小さい' },
-            { deg: 150, label: '直角より 大きい' }
+            { deg: 150, label: '直角より 大きい' },
+            { deg: 20, label: '直角より 小さい' },
+            { deg: 110, label: '直角より 大きい' },
+            { deg: 70, label: '直角より 小さい' },
+            { deg: 160, label: '直角より 大きい' },
+            { deg: 50, label: '直角より 小さい' },
+            { deg: 100, label: '直角より 大きい' },
+            { deg: 30, label: '直角より 小さい' }
           ];
           for (let i = 1; i <= 3; i++) {
             list[i] = { ...cand[(s + i) % cand.length], isRei: false };
@@ -4648,7 +4688,14 @@
             { eq: '400g ＋ 500g ＝', ans: 900, unit: 'g' },
             { eq: '1kg 300g ＋ 400g ＝', ansKg: 1, ansG: 700, isSplit: true },
             { eq: '1kg － 300g ＝', ans: 700, unit: 'g', hint: '1000－300' },
-            { eq: '2kg 500g ＝', ans: 2500, unit: 'g', hint: '2000＋500' }
+            { eq: '2kg 500g ＝', ans: 2500, unit: 'g', hint: '2000＋500' },
+            { eq: '3kg ＝', ans: 3000, unit: 'g', hint: '1kg＝1000g' },
+            { eq: '1kg 250g ＝', ans: 1250, unit: 'g', hint: '1000＋250' },
+            { eq: '4200g ＝', ansKg: 4, ansG: 200, isSplit: true, hint: '4000g＋200g' },
+            { eq: '600g ＋ 300g ＝', ans: 900, unit: 'g' },
+            { eq: '2kg 100g ＋ 600g ＝', ansKg: 2, ansG: 700, isSplit: true },
+            { eq: '1kg － 700g ＝', ans: 300, unit: 'g', hint: '1000－700' },
+            { eq: '1500g ＝', ansKg: 1, ansG: 500, isSplit: true, hint: '1000g＋500g' }
           ];
           for (let i = 1; i <= 5; i++) {
             list[i] = { ...cand[(s + i) % cand.length], isRei: false };
@@ -4699,7 +4746,14 @@
             { q: '1km 600m ＝', ans: 1600, unit: 'm' },
             { q: '3200m ＝', ansKm: 3, ansM: 200, isSplit: true },
             { q: '2km 400m ＝', ans: 2400, unit: 'm' },
-            { q: '1800m ＝', ansKm: 1, ansM: 800, isSplit: true }
+            { q: '1800m ＝', ansKm: 1, ansM: 800, isSplit: true },
+            { q: '3km ＝', ans: 3000, unit: 'm' },
+            { q: '1km 50m ＝', ans: 1050, unit: 'm' },
+            { q: '4700m ＝', ansKm: 4, ansM: 700, isSplit: true },
+            { q: '3km 900m ＝', ans: 3900, unit: 'm' },
+            { q: '2060m ＝', ansKm: 2, ansM: 60, isSplit: true },
+            { q: '5km 100m ＝', ans: 5100, unit: 'm' },
+            { q: '1200m ＝', ansKm: 1, ansM: 200, isSplit: true }
           ];
           for (let i = 1; i <= 3; i++) {
             list[i] = { ...cand[(s + i) % cand.length], isRei: false };
@@ -4767,7 +4821,14 @@
             { q: '50秒 ＋ 20秒 ＝', ansMin: 1, ansSec: 10, isSplit: true, hint: '70秒＝60秒＋10秒' },
             { q: '100秒 ＝', ansMin: 1, ansSec: 40, isSplit: true, hint: '60秒＋40秒' },
             { q: '1分 15秒 ＝', ans: 75, unit: '秒', hint: '60＋15' },
-            { q: '3分 ＝', ans: 180, unit: '秒', hint: '60×3' }
+            { q: '3分 ＝', ans: 180, unit: '秒', hint: '60×3' },
+            { q: '2分 10秒 ＝', ans: 130, unit: '秒', hint: '120＋10' },
+            { q: '75秒 ＝', ansMin: 1, ansSec: 15, isSplit: true, hint: '60秒＋15秒' },
+            { q: '45秒 ＋ 25秒 ＝', ansMin: 1, ansSec: 10, isSplit: true, hint: '70秒＝60秒＋10秒' },
+            { q: '130秒 ＝', ansMin: 2, ansSec: 10, isSplit: true, hint: '120秒＋10秒' },
+            { q: '1分 50秒 ＝', ans: 110, unit: '秒', hint: '60＋50' },
+            { q: '4分 ＝', ans: 240, unit: '秒', hint: '60×4' },
+            { q: '1分 5秒 ＝', ans: 65, unit: '秒', hint: '60＋5' }
           ];
           for (let i = 1; i <= 4; i++) {
             list[i] = { ...cand[(s + i) % cand.length], isRei: false };
@@ -5316,7 +5377,16 @@
           { a: 5, op1: '＋', b: 3, op2: '－', c: 4 },
           { a: 3, op1: '＋', b: 4, op2: '＋', c: 2 },
           { a: 8, op1: '－', b: 5, op2: '＋', c: 3 },
-          { a: 10, op1: '－', b: 4, op2: '－', c: 3 }
+          { a: 10, op1: '－', b: 4, op2: '－', c: 3 },
+          { a: 7, op1: '－', b: 2, op2: '－', c: 1 },
+          { a: 2, op1: '＋', b: 5, op2: '＋', c: 1 },
+          { a: 9, op1: '－', b: 4, op2: '＋', c: 3 },
+          { a: 6, op1: '＋', b: 3, op2: '－', c: 5 },
+          { a: 10, op1: '－', b: 3, op2: '＋', c: 2 },
+          { a: 4, op1: '＋', b: 4, op2: '－', c: 6 },
+          { a: 8, op1: '－', b: 6, op2: '＋', c: 5 },
+          { a: 5, op1: '＋', b: 2, op2: '＋', c: 2 },
+          { a: 10, op1: '－', b: 5, op2: '－', c: 4 }
         ];
         const list = [{ a: 3, op1: '＋', b: 2, op2: '＋', c: 4, isRei: true }];
         for (let i = 1; i <= 5; i++) {
@@ -5356,7 +5426,13 @@
           { a: 3, b: 7, shape: 'つつ', roll: 'ころがる' },
           { a: 5, b: 8, shape: 'ボール', roll: 'ころがる' },
           { a: 7, b: 5, shape: 'はこ', roll: 'ころがらない' },
-          { a: 4, b: 6, shape: 'つつ', roll: 'ころがる' }
+          { a: 4, b: 6, shape: 'つつ', roll: 'ころがる' },
+          { a: 2, b: 6, shape: 'はこ', roll: 'ころがらない' },
+          { a: 8, b: 4, shape: 'ボール', roll: 'ころがる' },
+          { a: 6, b: 3, shape: 'つつ', roll: 'ころがる' },
+          { a: 3, b: 5, shape: 'はこ', roll: 'ころがらない' },
+          { a: 7, b: 2, shape: 'ボール', roll: 'ころがる' },
+          { a: 4, b: 8, shape: 'つつ', roll: 'ころがる' }
         ];
         const list = [{ a: 5, b: 3, shape: 'ボール', roll: 'ころがる', isRei: true }];
         for (let i = 1; i <= 3; i++) {
@@ -5512,7 +5588,15 @@
           { eq: '□ ＋ 15 ＝ 32', a: 32, op: '－', b: 15, ans: 17 },
           { eq: '□ × 6 ＝ 42', a: 42, op: '÷', b: 6, ans: 7 },
           { eq: '□ － 9 ＝ 16', a: 16, op: '＋', b: 9, ans: 25 },
-          { eq: '□ × 7 ＝ 35', a: 35, op: '÷', b: 7, ans: 5 }
+          { eq: '□ × 7 ＝ 35', a: 35, op: '÷', b: 7, ans: 5 },
+          { eq: '□ ＋ 7 ＝ 23', a: 23, op: '－', b: 7, ans: 16 },
+          { eq: '□ － 8 ＝ 12', a: 12, op: '＋', b: 8, ans: 20 },
+          { eq: '□ × 3 ＝ 27', a: 27, op: '÷', b: 3, ans: 9 },
+          { eq: '□ ＋ 24 ＝ 40', a: 40, op: '－', b: 24, ans: 16 },
+          { eq: '□ × 8 ＝ 48', a: 48, op: '÷', b: 8, ans: 6 },
+          { eq: '□ － 15 ＝ 25', a: 25, op: '＋', b: 15, ans: 40 },
+          { eq: '□ × 9 ＝ 36', a: 36, op: '÷', b: 9, ans: 4 },
+          { eq: '□ ＋ 13 ＝ 30', a: 30, op: '－', b: 13, ans: 17 }
         ];
         const list = [{ eq: '□ ＋ 6 ＝ 15', a: 15, op: '－', b: 6, ans: 9, isRei: true }];
         for (let i = 1; i <= 5; i++) {
@@ -5604,7 +5688,15 @@
           { num: 8490, h: 4, action: '切り捨て', ans: 8000 },
           { num: 2830, h: 8, action: '切り上げ', ans: 3000 },
           { num: 5160, h: 1, action: '切り捨て', ans: 5000 },
-          { num: 7600, h: 6, action: '切り上げ', ans: 8000 }
+          { num: 7600, h: 6, action: '切り上げ', ans: 8000 },
+          { num: 1940, h: 9, action: '切り上げ', ans: 2000 },
+          { num: 9230, h: 2, action: '切り捨て', ans: 9000 },
+          { num: 6550, h: 5, action: '切り上げ', ans: 7000 },
+          { num: 4380, h: 3, action: '切り捨て', ans: 4000 },
+          { num: 7810, h: 8, action: '切り上げ', ans: 8000 },
+          { num: 2470, h: 4, action: '切り捨て', ans: 2000 },
+          { num: 5690, h: 6, action: '切り上げ', ans: 6000 },
+          { num: 8150, h: 1, action: '切り捨て', ans: 8000 }
         ];
         const list = [{ num: 3420, h: 4, action: '切り捨て', ans: 3000, isRei: true }];
         for (let i = 1; i <= 5; i++) {
@@ -5734,7 +5826,15 @@
           { expr: '( 9 － 4 ) × 5', firstExpr: '9－4', firstVal: 5, ans: 25, rule: '（　）が さき' },
           { expr: '30 － 6 × 4', firstExpr: '6×4', firstVal: 24, ans: 6, rule: '× が さき' },
           { expr: '18 ÷ ( 2 ＋ 4 )', firstExpr: '2＋4', firstVal: 6, ans: 3, rule: '（　）が さき' },
-          { expr: '7 ＋ 16 ÷ 2', firstExpr: '16÷2', firstVal: 8, ans: 15, rule: '÷ が さき' }
+          { expr: '7 ＋ 16 ÷ 2', firstExpr: '16÷2', firstVal: 8, ans: 15, rule: '÷ が さき' },
+          { expr: '24 ÷ ( 8 － 2 )', firstExpr: '8－2', firstVal: 6, ans: 4, rule: '（　）が さき' },
+          { expr: '9 ＋ 5 × 2', firstExpr: '5×2', firstVal: 10, ans: 19, rule: '× が さき' },
+          { expr: '40 － 24 ÷ 6', firstExpr: '24÷6', firstVal: 4, ans: 36, rule: '÷ が さき' },
+          { expr: '( 7 ＋ 3 ) × 6', firstExpr: '7＋3', firstVal: 10, ans: 60, rule: '（　）が さき' },
+          { expr: '50 － 7 × 6', firstExpr: '7×6', firstVal: 42, ans: 8, rule: '× が さき' },
+          { expr: '6 × ( 10 － 4 )', firstExpr: '10－4', firstVal: 6, ans: 36, rule: '（　）が さき' },
+          { expr: '13 ＋ 36 ÷ 4', firstExpr: '36÷4', firstVal: 9, ans: 22, rule: '÷ が さき' },
+          { expr: '( 15 － 5 ) ÷ 2', firstExpr: '15－5', firstVal: 10, ans: 5, rule: '（　）が さき' }
         ];
         const list = [{ expr: '12 ＋ 3 × 4', firstExpr: '3×4', firstVal: 12, ans: 24, rule: '× が さき', isRei: true }];
         for (let i = 1; i <= 5; i++) {
@@ -5773,7 +5873,15 @@
           { expr: '1.2 ÷ 3', tenthsA: 12, op: '÷', b: 3, tenthsAns: 4, ans: '0.4' },
           { expr: '0.6 × 4', tenthsA: 6, op: '×', b: 4, tenthsAns: 24, ans: '2.4' },
           { expr: '1.8 ÷ 6', tenthsA: 18, op: '÷', b: 6, tenthsAns: 3, ans: '0.3' },
-          { expr: '0.7 × 3', tenthsA: 7, op: '×', b: 3, tenthsAns: 21, ans: '2.1' }
+          { expr: '0.7 × 3', tenthsA: 7, op: '×', b: 3, tenthsAns: 21, ans: '2.1' },
+          { expr: '0.9 × 2', tenthsA: 9, op: '×', b: 2, tenthsAns: 18, ans: '1.8' },
+          { expr: '2.4 ÷ 6', tenthsA: 24, op: '÷', b: 6, tenthsAns: 4, ans: '0.4' },
+          { expr: '0.5 × 3', tenthsA: 5, op: '×', b: 3, tenthsAns: 15, ans: '1.5' },
+          { expr: '1.6 ÷ 2', tenthsA: 16, op: '÷', b: 2, tenthsAns: 8, ans: '0.8' },
+          { expr: '0.8 × 3', tenthsA: 8, op: '×', b: 3, tenthsAns: 24, ans: '2.4' },
+          { expr: '2.1 ÷ 7', tenthsA: 21, op: '÷', b: 7, tenthsAns: 3, ans: '0.3' },
+          { expr: '0.6 ÷ 3', tenthsA: 6, op: '÷', b: 3, tenthsAns: 2, ans: '0.2' },
+          { expr: '0.4 × 6', tenthsA: 4, op: '×', b: 6, tenthsAns: 24, ans: '2.4' }
         ];
         const list = [{ expr: '0.2 × 3', tenthsA: 2, op: '×', b: 3, tenthsAns: 6, ans: '0.6', isRei: true }];
         for (let i = 1; i <= 5; i++) {
@@ -5866,7 +5974,14 @@
         const cand = [
           { h: 3, w: 6, isSq: false }, { h: 4, w: 4, isSq: true },
           { h: 4, w: 7, isSq: false }, { h: 5, w: 5, isSq: true },
-          { h: 2, w: 8, isSq: false }, { h: 6, w: 6, isSq: true }
+          { h: 2, w: 8, isSq: false }, { h: 6, w: 6, isSq: true },
+          { h: 2, w: 6, isSq: false },
+          { h: 3, w: 4, isSq: false },
+          { h: 5, w: 7, isSq: false },
+          { h: 3, w: 3, isSq: true },
+          { h: 4, w: 6, isSq: false },
+          { h: 2, w: 7, isSq: false },
+          { h: 7, w: 7, isSq: true }
         ];
         const list = [{ h: 3, w: 5, isSq: false, isRei: true }];
         for (let i = 1; i <= 3; i++) {
@@ -5921,7 +6036,7 @@
       // 【4年⑨】分度器と 角の 大きさ（目盛りを よもう・180°の角）
       if (unit === 'g4_angle_protractor') {
         const title = '分度器と 角の 大きさ（0°の 線から 目盛りを よもう）';
-        const cand = [40, 70, 110, 130, 50, 140, 80];
+        const cand = [40, 70, 110, 130, 50, 140, 80, 20, 30, 90, 100, 120, 150, 160];
         const list = [{ deg: 60, isRei: true }];
         for (let i = 1; i <= 3; i++) {
           list.push({ deg: cand[(s + i) % cand.length], isRei: false });
@@ -5980,20 +6095,27 @@
           { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう辺が 平行' },
           { type: 'rhom', pairs: 2, name: 'ひし形', desc: '4つの辺が すべて同じ長さ' },
           { type: 'trap', pairs: 1, name: '台形', desc: '1組の辺が 平行' },
-          { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう角が 同じ大きさ' }
+          { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう角が 同じ大きさ' },
+          { type: 'trap', pairs: 1, name: '台形', desc: '上と下の辺だけが 平行', poly: '12,14 60,14 88,58 12,58' },
+          { type: 'rect', pairs: 2, name: '長方形', desc: '4つの角が すべて直角', poly: '12,14 88,14 88,58 12,58' },
+          { type: 'para', pairs: 2, name: '平行四辺形', desc: '向かいあう辺の 長さが 同じ', poly: '12,14 70,14 88,58 30,58' },
+          { type: 'sq', pairs: 2, name: '正方形', desc: '4つの辺が同じで 角が直角', poly: '24,6 84,6 84,66 24,66' },
+          { type: 'rhom', pairs: 2, name: 'ひし形', desc: '4つの辺が すべて同じ長さ', poly: '38,20 78,20 54,52 14,52' },
+          { type: 'trap', pairs: 1, name: '台形', desc: '1組の辺だけが 平行', poly: '38,14 64,14 92,58 8,58' }
         ];
         const list = [
           { type: 'trap', pairs: 1, name: '台形', desc: '1組の辺が 平行', isRei: true },
-          { ...cand[(s + 0) % cand.length], isRei: false },
-          { ...cand[(s + 1) % cand.length], isRei: false },
-          { ...cand[(s + 2) % cand.length], isRei: false }
+          { ...cand[(s * 2 + 0) % cand.length], isRei: false },
+          { ...cand[(s * 2 + 1) % cand.length], isRei: false },
+          { ...cand[(s * 2 + 2) % cand.length], isRei: false }
         ];
         const itemsHtml = list.map((it, idx) => {
           const tracePairs = it.isRei || level === 'step1';
           const traceName = it.isRei;
           const showDesc = it.isRei || level !== 'step3';
           let poly = '';
-          if (it.type === 'trap') poly = '28,14 72,14 90,58 12,58';
+          if (it.poly) poly = it.poly;
+          else if (it.type === 'trap') poly = '28,14 72,14 90,58 12,58';
           else if (it.type === 'para') poly = '28,14 90,14 72,58 10,58';
           else poly = '50,8 88,36 50,64 12,36';
           return `
@@ -6018,12 +6140,20 @@
       // 【4年⑪】直方体と 立方体（見取図・展開図と 面・辺の 数）
       if (unit === 'g4_cuboid') {
         const title = '直方体と 立方体（見取図と 展開図・面や辺の 関係）';
-        const items = [
-          { q: 'さいころのように 正方形だけで 囲まれた 形', subLabel: '面の数：', subVal: 6, subUnit: 'こ', ans: '立方体', isText: true, isRei: true },
-          { q: '長方形（や正方形）で 囲まれた 箱の 形', subLabel: '頂点の数：', subVal: 8, subUnit: 'こ', ans: '直方体', isText: true, isRei: false },
-          { q: '直方体の 辺（直線）は ぜんぶで 何本？', subLabel: '4本 ×', subVal: 3, subUnit: '組', ans: 12, unit: '本', isText: false, isRei: false },
-          { q: '1つの 面と 垂直に 交わる 辺は 何本？', subLabel: 'かどの 点が', subVal: 4, subUnit: 'こ', ans: 4, unit: '本', isText: false, isRei: false }
+        const pool = [
+          { q: '長方形（や正方形）で 囲まれた 箱の 形', subLabel: '頂点の数：', subVal: 8, subUnit: 'こ', ans: '直方体', isText: true },
+          { q: '直方体の 辺（直線）は ぜんぶで 何本？', subLabel: '4本 ×', subVal: 3, subUnit: '組', ans: 12, unit: '本', isText: false },
+          { q: '1つの 面と 垂直に 交わる 辺は 何本？', subLabel: 'かどの 点が', subVal: 4, subUnit: 'こ', ans: 4, unit: '本', isText: false },
+          { q: '直方体の 面は ぜんぶで いくつ？', subLabel: '向かいあう 面が', subVal: 3, subUnit: '組', ans: 6, unit: 'こ', isText: false },
+          { q: '直方体の 頂点は ぜんぶで いくつ？', subLabel: '上に 4こ ＋ 下に', subVal: 4, subUnit: 'こ', ans: 8, unit: 'こ', isText: false },
+          { q: '1つの 面に 平行な 面は いくつ？', subLabel: '6つの 面は', subVal: 3, subUnit: '組の 向かいあう面', ans: 1, unit: 'こ', isText: false },
+          { q: '1つの 面に 垂直な 面は いくつ？', subLabel: '自分と 向かいあう面を のぞく：6 －', subVal: 2, subUnit: '', ans: 4, unit: 'こ', isText: false },
+          { q: '1つの 辺に 平行な 辺は（自分の ほかに）何本？', subLabel: '同じ向きの 辺は ぜんぶで', subVal: 4, subUnit: '本', ans: 3, unit: '本', isText: false },
+          { q: '立方体の 面は どんな 形？', subLabel: '4つの 辺が すべて', subVal: '同じ', subUnit: '長さ', ans: '正方形', isText: true }
         ];
+        // れいの あとに、問題の種（s）で えらんだ 3問を ならべる（1枚の中で 同じ問題は 出さない）
+        const items = [{ q: 'さいころのように 正方形だけで 囲まれた 形', subLabel: '面の数：', subVal: 6, subUnit: 'こ', ans: '立方体', isText: true, isRei: true }];
+        for (let i = 1; i <= 3; i++) items.push({ ...pool[(s * 2 + i) % pool.length], isRei: false });
         const itemsHtml = items.map((it, idx) => {
           const traceSub = it.isRei || level === 'step1';
           const traceAns = it.isRei;
@@ -6344,7 +6474,15 @@ function addG5Units(unit, level, s, pageLabel) {
       { a: 4.1, b: 1.3, ans: '5.33', p1: 123, p2: 41 },
       { a: 2.5, b: 1.6, ans: '4.00', p1: 150, p2: 25 },
       { a: 3.4, b: 1.2, ans: '4.08', p1: 68, p2: 34 },
-      { a: 1.8, b: 2.3, ans: '4.14', p1: 54, p2: 36 }
+      { a: 1.8, b: 2.3, ans: '4.14', p1: 54, p2: 36 },
+      { a: 3.6, b: 1.2, ans: '4.32', p1: 72, p2: 36 },
+      { a: 2.7, b: 1.3, ans: '3.51', p1: 81, p2: 27 },
+      { a: 4.2, b: 2.2, ans: '9.24', p1: 84, p2: 84 },
+      { a: 1.6, b: 3.1, ans: '4.96', p1: 16, p2: 48 },
+      { a: 2.4, b: 2.5, ans: '6.00', p1: 120, p2: 48 },
+      { a: 5.3, b: 1.7, ans: '9.01', p1: 371, p2: 53 },
+      { a: 3.1, b: 2.6, ans: '8.06', p1: 186, p2: 62 },
+      { a: 1.9, b: 1.5, ans: '2.85', p1: 95, p2: 19 }
     ];
     const list = [{ a: 2.3, b: 1.4, ans: '3.22', p1: 92, p2: 23, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6387,7 +6525,15 @@ function addG5Units(unit, level, s, pageLabel) {
       { a: 9.1, b: 1.3, ans: 7 },
       { a: 7.5, b: 2.5, ans: 3 },
       { a: 5.6, b: 1.4, ans: 4 },
-      { a: 9.6, b: 3.2, ans: 3 }
+      { a: 9.6, b: 3.2, ans: 3 },
+      { a: 8.4, b: 2.1, ans: 4 },
+      { a: 9.8, b: 1.4, ans: 7 },
+      { a: 7.8, b: 2.6, ans: 3 },
+      { a: 4.8, b: 1.2, ans: 4 },
+      { a: 8.1, b: 2.7, ans: 3 },
+      { a: 9.9, b: 3.3, ans: 3 },
+      { a: 6.5, b: 1.3, ans: 5 },
+      { a: 7.2, b: 2.4, ans: 3 }
     ];
     const list = [{ a: 7.2, b: 1.2, ans: 6, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6433,7 +6579,15 @@ function addG5Units(unit, level, s, pageLabel) {
       { a: 6.8, b: 1.5, q: 4, rem: '0.8' },
       { a: 5.7, b: 1.6, q: 3, rem: '0.9' },
       { a: 8.2, b: 2.5, q: 3, rem: '0.7' },
-      { a: 7.9, b: 3.2, q: 2, rem: '1.5' }
+      { a: 7.9, b: 3.2, q: 2, rem: '1.5' },
+      { a: 9.5, b: 2.2, q: 4, rem: '0.7' },
+      { a: 8.7, b: 2.6, q: 3, rem: '0.9' },
+      { a: 6.9, b: 1.7, q: 4, rem: '0.1' },
+      { a: 9.8, b: 2.7, q: 3, rem: '1.7' },
+      { a: 5.9, b: 1.8, q: 3, rem: '0.5' },
+      { a: 7.4, b: 2.1, q: 3, rem: '1.1' },
+      { a: 8.9, b: 3.5, q: 2, rem: '1.9' },
+      { a: 6.6, b: 1.9, q: 3, rem: '0.9' }
     ];
     const list = [{ a: 7.6, b: 2.3, q: 3, rem: '0.7', isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6476,7 +6630,16 @@ function addG5Units(unit, level, s, pageLabel) {
       { n: 5, d: 10, div: 5, an: 1, ad: 2 },
       { n: 8, d: 12, div: 4, an: 2, ad: 3 },
       { n: 9, d: 12, div: 3, an: 3, ad: 4 },
-      { n: 6, d: 10, div: 2, an: 3, ad: 5 }
+      { n: 6, d: 10, div: 2, an: 3, ad: 5 },
+      { n: 10, d: 15, div: 5, an: 2, ad: 3 },
+      { n: 12, d: 16, div: 4, an: 3, ad: 4 },
+      { n: 6, d: 8, div: 2, an: 3, ad: 4 },
+      { n: 8, d: 10, div: 2, an: 4, ad: 5 },
+      { n: 3, d: 9, div: 3, an: 1, ad: 3 },
+      { n: 12, d: 18, div: 6, an: 2, ad: 3 },
+      { n: 15, d: 20, div: 5, an: 3, ad: 4 },
+      { n: 14, d: 21, div: 7, an: 2, ad: 3 },
+      { n: 10, d: 12, div: 2, an: 5, ad: 6 }
     ];
     const list = [{ n: 4, d: 8, div: 4, an: 1, ad: 2, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6522,7 +6685,15 @@ function addG5Units(unit, level, s, pageLabel) {
       { n1: 1, d1: 4, n2: 1, d2: 6, cd: 12, an1: 3, an2: 2 },
       { n1: 2, d1: 5, n2: 1, d2: 2, cd: 10, an1: 4, an2: 5 },
       { n1: 2, d1: 3, n2: 3, d2: 4, cd: 12, an1: 8, an2: 9 },
-      { n1: 1, d1: 2, n2: 2, d2: 5, cd: 10, an1: 5, an2: 4 }
+      { n1: 1, d1: 2, n2: 2, d2: 5, cd: 10, an1: 5, an2: 4 },
+      { n1: 1, d1: 3, n2: 1, d2: 6, cd: 6, an1: 2, an2: 1 },
+      { n1: 3, d1: 4, n2: 1, d2: 6, cd: 12, an1: 9, an2: 2 },
+      { n1: 1, d1: 2, n2: 3, d2: 8, cd: 8, an1: 4, an2: 3 },
+      { n1: 2, d1: 3, n2: 1, d2: 5, cd: 15, an1: 10, an2: 3 },
+      { n1: 1, d1: 4, n2: 1, d2: 10, cd: 20, an1: 5, an2: 2 },
+      { n1: 5, d1: 6, n2: 3, d2: 8, cd: 24, an1: 20, an2: 9 },
+      { n1: 3, d1: 5, n2: 1, d2: 4, cd: 20, an1: 12, an2: 5 },
+      { n1: 1, d1: 6, n2: 4, d2: 9, cd: 18, an1: 3, an2: 8 }
     ];
     const list = [{ n1: 1, d1: 2, n2: 1, d2: 3, cd: 6, an1: 3, an2: 2, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6747,7 +6918,16 @@ function addG5Units(unit, level, s, pageLabel) {
       { b: 12, h: 6, area: 36 },
       { b: 9, h: 4, area: 18 },
       { b: 7, h: 6, area: 21 },
-      { b: 8, h: 7, area: 28 }
+      { b: 8, h: 7, area: 28 },
+      { b: 6, h: 5, area: 15 },
+      { b: 10, h: 4, area: 20 },
+      { b: 6, h: 7, area: 21 },
+      { b: 9, h: 6, area: 27 },
+      { b: 12, h: 7, area: 42 },
+      { b: 5, h: 4, area: 10 },
+      { b: 11, h: 6, area: 33 },
+      { b: 7, h: 4, area: 14 },
+      { b: 10, h: 6, area: 30 }
     ];
     const list = [{ b: 8, h: 5, area: 20, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6796,7 +6976,14 @@ function addG5Units(unit, level, s, pageLabel) {
       { b: 6, h: 5, dummy: 6, area: 30 },
       { b: 10, h: 4, dummy: 5, area: 40 },
       { b: 5, h: 7, dummy: 8, area: 35 },
-      { b: 12, h: 3, dummy: 4, area: 36 }
+      { b: 12, h: 3, dummy: 4, area: 36 },
+      { b: 8, h: 5, dummy: 6, area: 40 },
+      { b: 6, h: 4, dummy: 5, area: 24 },
+      { b: 9, h: 3, dummy: 4, area: 27 },
+      { b: 11, h: 4, dummy: 5, area: 44 },
+      { b: 7, h: 6, dummy: 7, area: 42 },
+      { b: 10, h: 5, dummy: 6, area: 50 },
+      { b: 12, h: 5, dummy: 6, area: 60 }
     ];
     const list = [{ b: 7, h: 4, dummy: 5, area: 28, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6845,7 +7032,15 @@ function addG5Units(unit, level, s, pageLabel) {
       { type: '台形', top: 4, btm: 8, h: 5, area: 30 },
       { type: 'ひし形', d1: 8, d2: 10, area: 40 },
       { type: '台形', top: 2, btm: 6, h: 6, area: 24 },
-      { type: 'ひし形', d1: 10, d2: 12, area: 60 }
+      { type: 'ひし形', d1: 10, d2: 12, area: 60 },
+      { type: '台形', top: 5, btm: 9, h: 4, area: 28 },
+      { type: 'ひし形', d1: 4, d2: 6, area: 12 },
+      { type: '台形', top: 2, btm: 8, h: 5, area: 25 },
+      { type: 'ひし形', d1: 6, d2: 10, area: 30 },
+      { type: '台形', top: 6, btm: 10, h: 3, area: 24 },
+      { type: 'ひし形', d1: 8, d2: 12, area: 48 },
+      { type: '台形', top: 4, btm: 6, h: 6, area: 30 },
+      { type: 'ひし形', d1: 4, d2: 10, area: 20 }
     ];
     const list = [{ type: '台形', top: 3, btm: 7, h: 4, area: 20, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6905,7 +7100,15 @@ function addG5Units(unit, level, s, pageLabel) {
       { r: 3, d: 6, isDia: false, ans: '18.84' },
       { d: 20, isDia: true, ans: '62.8' },
       { r: 5, d: 10, isDia: false, ans: '31.4' },
-      { d: 2, isDia: true, ans: '6.28' }
+      { d: 2, isDia: true, ans: '6.28' },
+      { d: 6, isDia: true, ans: '18.84' },
+      { r: 2, d: 4, isDia: false, ans: '12.56' },
+      { d: 8, isDia: true, ans: '25.12' },
+      { r: 6, d: 12, isDia: false, ans: '37.68' },
+      { d: 4, isDia: true, ans: '12.56' },
+      { r: 10, d: 20, isDia: false, ans: '62.8' },
+      { d: 3, isDia: true, ans: '9.42' },
+      { r: 7, d: 14, isDia: false, ans: '43.96' }
     ];
     const list = [{ d: 10, isDia: true, ans: '31.4', isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6947,7 +7150,12 @@ function addG5Units(unit, level, s, pageLabel) {
       { name: '正八角形', n: 8, ang: 45 },
       { name: '正九角形', n: 9, ang: 40 },
       { name: '正十角形', n: 10, ang: 36 },
-      { name: '正十二角形', n: 12, ang: 30 }
+      { name: '正十二角形', n: 12, ang: 30 },
+      { name: '正三角形', n: 3, ang: 120 },
+      { name: '正方形', n: 4, ang: 90 },
+      { name: '正十五角形', n: 15, ang: 24 },
+      { name: '正十八角形', n: 18, ang: 20 },
+      { name: '正二十角形', n: 20, ang: 18 }
     ];
     const list = [{ name: '正五角形', n: 5, ang: 72, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -6993,7 +7201,14 @@ function addG5Units(unit, level, s, pageLabel) {
       { type: '直方体', l: 6, w: 2, h: 4, vol: 48 },
       { type: '直方体', l: 5, w: 4, h: 3, vol: 60 },
       { type: '立方体', l: 4, w: 4, h: 4, vol: 64 },
-      { type: '直方体', l: 8, w: 2, h: 5, vol: 80 }
+      { type: '直方体', l: 8, w: 2, h: 5, vol: 80 },
+      { type: '直方体', l: 3, w: 2, h: 6, vol: 36 },
+      { type: '立方体', l: 5, w: 5, h: 5, vol: 125 },
+      { type: '直方体', l: 7, w: 3, h: 2, vol: 42 },
+      { type: '立方体', l: 2, w: 2, h: 2, vol: 8 },
+      { type: '直方体', l: 6, w: 4, h: 3, vol: 72 },
+      { type: '直方体', l: 9, w: 2, h: 3, vol: 54 },
+      { type: '立方体', l: 6, w: 6, h: 6, vol: 216 }
     ];
     const list = [{ type: '直方体', l: 4, w: 3, h: 5, vol: 60, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7041,7 +7256,9 @@ function addG5Units(unit, level, s, pageLabel) {
       { name: '四角柱', baseShape: '四角形', faces: 6, edges: 12, vertices: 8 },
       { name: '五角柱', baseShape: '五角形', faces: 7, edges: 15, vertices: 10 },
       { name: '六角柱', baseShape: '六角形', faces: 8, edges: 18, vertices: 12 },
-      { name: '円柱', baseShape: '円', faces: 3, edges: 2, vertices: 0 }
+      { name: '円柱', baseShape: '円', faces: 3, edges: 2, vertices: 0 },
+      { name: '七角柱', baseShape: '七角形', faces: 9, edges: 21, vertices: 14 },
+      { name: '八角柱', baseShape: '八角形', faces: 10, edges: 24, vertices: 16 }
     ];
     const list = [{ name: '三角柱', baseShape: '三角形', faces: 5, edges: 9, vertices: 6, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7082,7 +7299,14 @@ function addG5Units(unit, level, s, pageLabel) {
       { room: '音楽室', area: 60, people: 20 },
       { room: '教室A', area: 80, people: 40 },
       { room: '教室B', area: 90, people: 30 },
-      { room: '広場', area: 150, people: 50 }
+      { room: '広場', area: 150, people: 50 },
+      { room: '理科室', area: 72, people: 24 },
+      { room: '家庭科室', area: 84, people: 28 },
+      { room: '公園', area: 300, people: 60 },
+      { room: 'ホール', area: 120, people: 48 },
+      { room: '会議室', area: 45, people: 18 },
+      { room: '教室C', area: 70, people: 35 },
+      { room: 'プール', area: 250, people: 50 }
     ];
     const list = [{ room: '図書室', area: 50, people: 25, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7130,7 +7354,15 @@ function addG5Units(unit, level, s, pageLabel) {
       { d: 150, t: 3, s: 50, unitD: 'km', unitT: '時間', unitS: '時速50km' },
       { d: 80, t: 4, s: 20, unitD: 'm', unitT: '秒', unitS: '秒速20m' },
       { d: 240, t: 4, s: 60, unitD: 'km', unitT: '時間', unitS: '時速60km' },
-      { d: 400, t: 8, s: 50, unitD: 'm', unitT: '分', unitS: '分速50m' }
+      { d: 400, t: 8, s: 50, unitD: 'm', unitT: '分', unitS: '分速50m' },
+      { d: 210, t: 3, s: 70, unitD: 'km', unitT: '時間', unitS: '時速70km' },
+      { d: 360, t: 6, s: 60, unitD: 'm', unitT: '分', unitS: '分速60m' },
+      { d: 90, t: 3, s: 30, unitD: 'm', unitT: '秒', unitS: '秒速30m' },
+      { d: 320, t: 4, s: 80, unitD: 'km', unitT: '時間', unitS: '時速80km' },
+      { d: 450, t: 9, s: 50, unitD: 'm', unitT: '分', unitS: '分速50m' },
+      { d: 100, t: 5, s: 20, unitD: 'm', unitT: '秒', unitS: '秒速20m' },
+      { d: 280, t: 7, s: 40, unitD: 'm', unitT: '分', unitS: '分速40m' },
+      { d: 45, t: 3, s: 15, unitD: 'm', unitT: '秒', unitS: '秒速15m' }
     ];
     const list = [{ d: 120, t: 2, s: 60, unitD: 'km', unitT: '時間', unitS: '時速60km', isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7174,7 +7406,14 @@ function addG5Units(unit, level, s, pageLabel) {
       { base: 40, comp: 10, ratio: 0.25 },
       { base: 25, comp: 50, ratio: 2 },
       { base: 80, comp: 60, ratio: 0.75 },
-      { base: 30, comp: 15, ratio: 0.5 }
+      { base: 30, comp: 15, ratio: 0.5 },
+      { base: 50, comp: 75, ratio: 1.5 },
+      { base: 60, comp: 12, ratio: 0.2 },
+      { base: 20, comp: 5, ratio: 0.25 },
+      { base: 40, comp: 30, ratio: 0.75 },
+      { base: 25, comp: 10, ratio: 0.4 },
+      { base: 10, comp: 30, ratio: 3 },
+      { base: 80, comp: 40, ratio: 0.5 }
     ];
     const list = [{ base: 20, comp: 30, ratio: 1.5, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7256,7 +7495,14 @@ function addG5Units(unit, level, s, pageLabel) {
       { base: 150, pct: 40, ratio: 0.4, ans: 60, unit: 'g' },
       { base: 80, pct: 25, ratio: 0.25, ans: 20, unit: '本' },
       { base: 300, pct: 15, ratio: 0.15, ans: 45, unit: '人' },
-      { base: 500, pct: 10, ratio: 0.1, ans: 50, unit: '円' }
+      { base: 500, pct: 10, ratio: 0.1, ans: 50, unit: '円' },
+      { base: 400, pct: 30, ratio: 0.3, ans: 120, unit: '円' },
+      { base: 60, pct: 50, ratio: 0.5, ans: 30, unit: '人' },
+      { base: 250, pct: 20, ratio: 0.2, ans: 50, unit: 'g' },
+      { base: 90, pct: 10, ratio: 0.1, ans: 9, unit: '本' },
+      { base: 160, pct: 25, ratio: 0.25, ans: 40, unit: '人' },
+      { base: 700, pct: 40, ratio: 0.4, ans: 280, unit: '円' },
+      { base: 350, pct: 60, ratio: 0.6, ans: 210, unit: 'g' }
     ];
     const list = [{ base: 120, pct: 30, ratio: 0.3, ans: 36, unit: '人', isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7299,7 +7545,13 @@ function addG5Units(unit, level, s, pageLabel) {
       { unitName: '代金', k: 50, rowX: [1, 2, 3, 4], rowY: [50, 100, 150, 200] },
       { unitName: '水深', k: 4, rowX: [1, 2, 3, 4], rowY: [4, 8, 12, 16] },
       { unitName: '重さ', k: 20, rowX: [1, 2, 3, 4], rowY: [20, 40, 60, 80] },
-      { unitName: '長さ', k: 5, rowX: [1, 2, 3, 4], rowY: [5, 10, 15, 20] }
+      { unitName: '長さ', k: 5, rowX: [1, 2, 3, 4], rowY: [5, 10, 15, 20] },
+      { unitName: '代金', k: 80, rowX: [1, 2, 3, 4], rowY: [80, 160, 240, 320] },
+      { unitName: '水の量', k: 6, rowX: [1, 2, 3, 4], rowY: [6, 12, 18, 24] },
+      { unitName: '重さ', k: 30, rowX: [1, 2, 3, 4], rowY: [30, 60, 90, 120] },
+      { unitName: '道のり', k: 60, rowX: [1, 2, 3, 4], rowY: [60, 120, 180, 240] },
+      { unitName: '高さ', k: 2, rowX: [1, 2, 3, 4], rowY: [2, 4, 6, 8] },
+      { unitName: '面積', k: 7, rowX: [1, 2, 3, 4], rowY: [7, 14, 21, 28] }
     ];
     const list = [{ unitName: '高さ', k: 3, rowX: [1, 2, 3, 4], rowY: [3, 6, 9, 12], isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7343,7 +7595,14 @@ function addG5Units(unit, level, s, pageLabel) {
       { vals: [40, 50, 60], sum: 150, n: 3, avg: 50 },
       { vals: [6, 8, 7, 7], sum: 28, n: 4, avg: 7 },
       { vals: [20, 25, 30, 25], sum: 100, n: 4, avg: 25 },
-      { vals: [14, 16, 15], sum: 45, n: 3, avg: 15 }
+      { vals: [14, 16, 15], sum: 45, n: 3, avg: 15 },
+      { vals: [10, 12, 14], sum: 36, n: 3, avg: 12 },
+      { vals: [30, 40, 50, 40], sum: 160, n: 4, avg: 40 },
+      { vals: [3, 5, 4, 6, 7], sum: 25, n: 5, avg: 5 },
+      { vals: [18, 22, 20], sum: 60, n: 3, avg: 20 },
+      { vals: [9, 11, 13, 7], sum: 40, n: 4, avg: 10 },
+      { vals: [60, 70, 80], sum: 210, n: 3, avg: 70 },
+      { vals: [4, 6, 5, 8, 7], sum: 30, n: 5, avg: 6 }
     ];
     const list = [{ vals: [8, 6, 7, 9, 5], sum: 35, n: 5, avg: 7, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7385,7 +7644,13 @@ function addG5Units(unit, level, s, pageLabel) {
       { itemA: '犬', pctA: 50, itemB: '猫', pctB: 30, itemC: 'その他', pctC: 20 },
       { itemA: '野球', pctA: 35, itemB: 'サッカー', pctB: 45, itemC: 'その他', pctC: 20 },
       { itemA: '赤', pctA: 45, itemB: '青', pctB: 35, itemC: 'その他', pctC: 20 },
-      { itemA: '春', pctA: 30, itemB: '夏', pctB: 40, itemC: 'その他', pctC: 30 }
+      { itemA: '春', pctA: 30, itemB: '夏', pctB: 40, itemC: 'その他', pctC: 30 },
+      { itemA: 'パン', pctA: 35, itemB: 'ごはん', pctB: 45, itemC: 'その他', pctC: 20 },
+      { itemA: 'バス', pctA: 25, itemB: '徒歩', pctB: 55, itemC: 'その他', pctC: 20 },
+      { itemA: '国語', pctA: 30, itemB: '算数', pctB: 45, itemC: 'その他', pctC: 25 },
+      { itemA: 'りんご', pctA: 40, itemB: 'みかん', pctB: 30, itemC: 'その他', pctC: 30 },
+      { itemA: '晴れ', pctA: 55, itemB: 'くもり', pctB: 25, itemC: 'その他', pctC: 20 },
+      { itemA: '水泳', pctA: 30, itemB: 'ダンス', pctB: 50, itemC: 'その他', pctC: 20 }
     ];
     const list = [{ itemA: '読書', pctA: 40, itemB: '運動', pctB: 35, itemC: 'その他', pctC: 25, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7760,15 +8025,33 @@ function addG6Units(unit, level, s, pageLabel) {
 
   // 7. 線対称な 図形
   if (unit === 'g6_symmetry_line') {
-    const title = '線対称な 図形（対称の軸と 対応する点・辺）';
+    const title = '線対称な 図形（対称の軸と 対応する点）';
+    // 図形の頂点（対称の軸 アイ は どれも x=70 の たての線）
+    const SHAPES = {
+      '二等辺三角形': { A: [70, 12], B: [28, 96], C: [112, 96] },
+      '正三角形': { A: [70, 14], B: [24, 94], C: [116, 94] },
+      '正方形': { A: [32, 17], B: [32, 93], C: [108, 93], D: [108, 17] },
+      '長方形': { A: [16, 27], B: [16, 83], C: [124, 83], D: [124, 27] },
+      'ひし形': { A: [70, 8], B: [28, 55], C: [70, 102], D: [112, 55] },
+      '正五角形': { A: [70, 10], B: [27, 41], C: [43, 92], D: [97, 92], E: [113, 41] },
+      '正六角形': { A: [70, 10], B: [31, 32.5], C: [31, 77.5], D: [70, 100], E: [109, 77.5], F: [109, 32.5] }
+    };
+    const AXES = { '二等辺三角形': 1, '正三角形': 3, '正方形': 4, '長方形': 2, 'ひし形': 2, '正五角形': 5, '正六角形': 6 };
     const cand = [
-      { shape: '二等辺三角形', ptA: '点B', ptB: '点C', sideA: '辺AB', sideB: '辺AC', numAxis: 1 },
-      { shape: '正方形', ptA: '点A', ptB: '点D', sideA: '辺AB', sideB: '辺DC', numAxis: 4 },
-      { shape: 'ひし形', ptA: '点B', ptB: '点D', sideA: '辺AB', sideB: '辺AD', numAxis: 2 },
-      { shape: '正三角形', ptA: '点B', ptB: '点C', sideA: '辺AB', sideB: '辺AC', numAxis: 3 },
-      { shape: '長方形', ptA: '点A', ptB: '点B', sideA: '辺AD', sideB: '辺BC', numAxis: 2 }
+      { shape: '正三角形', ptA: '点B', ptB: '点C' },
+      { shape: '正方形', ptA: '点A', ptB: '点D' },
+      { shape: '長方形', ptA: '点A', ptB: '点D' },
+      { shape: 'ひし形', ptA: '点B', ptB: '点D' },
+      { shape: '正五角形', ptA: '点B', ptB: '点E' },
+      { shape: '正六角形', ptA: '点B', ptB: '点F' },
+      { shape: '正三角形', ptA: '点C', ptB: '点B' },
+      { shape: '正方形', ptA: '点B', ptB: '点C' },
+      { shape: '長方形', ptA: '点C', ptB: '点B' },
+      { shape: 'ひし形', ptA: '点D', ptB: '点B' },
+      { shape: '正五角形', ptA: '点C', ptB: '点D' },
+      { shape: '正六角形', ptA: '点C', ptB: '点E' }
     ];
-    const list = [{ shape: '二等辺三角形', ptA: '点B', ptB: '点C', sideA: '辺AB', sideB: '辺AC', numAxis: 1, isRei: true }];
+    const list = [{ shape: '二等辺三角形', ptA: '点B', ptB: '点C', isRei: true }];
     const filteredCand = cand.filter(c => {
       const rei = list[0];
       const keys = Object.keys(rei).filter(k => k !== 'isRei');
@@ -7777,23 +8060,51 @@ function addG6Units(unit, level, s, pageLabel) {
     for (let i = 1; i <= 3; i++) {
       list.push({ ...filteredCand[(s * 2 + i) % filteredCand.length], isRei: false });
     }
+    const lineSvg = (it, showHint) => {
+      const P = SHAPES[it.shape];
+      const names = Object.keys(P);
+      const cx = 70, cy = 55;
+      const poly = names.map(n => P[n].map(v => v.toFixed(1)).join(',')).join(' ');
+      const labels = names.map(n => {
+        const [x, y] = P[n];
+        const dx = x - cx, dy = y - cy, len = Math.hypot(dx, dy) || 1;
+        const lx = x + dx / len * 11, ly = y + dy / len * 11 + 4;
+        // 軸の上の点は、軸の線と文字が重ならないよう 右に ずらす
+        const onAxis = Math.abs(x - cx) < 1;
+        return `<text x="${(onAxis ? x + 9 : lx).toFixed(1)}" y="${(onAxis ? y + (dy < 0 ? 2 : 8) : ly).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="700" fill="#18181b">${n}</text>`;
+      }).join('');
+      const a = P[it.ptA.replace('点', '')], b = P[it.ptB.replace('点', '')];
+      // れい：対応する点どうしを結ぶ／ヒント：軸までの半分だけ
+      const guide = it.isRei
+        ? `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#71717a" stroke-width="1.2" stroke-dasharray="4 3" />`
+        : (showHint ? `<line x1="${a[0]}" y1="${a[1]}" x2="${cx}" y2="${a[1]}" stroke="#71717a" stroke-width="1.2" stroke-dasharray="4 3" />` : '');
+      return `<svg width="150" height="114" viewBox="-6 -2 152 114" style="flex-shrink:0;">
+        <polygon points="${poly}" fill="#ffffff" stroke="#18181b" stroke-width="1.8" />
+        <line x1="${cx}" y1="0" x2="${cx}" y2="110" stroke="#a1a1aa" stroke-width="1.3" stroke-dasharray="6 3 1.5 3" />
+        <text x="${cx - 8}" y="8" font-size="10" fill="#52525b" text-anchor="end">ア</text>
+        <text x="${cx - 8}" y="110" font-size="10" fill="#52525b" text-anchor="end">イ</text>
+        ${guide}
+        ${labels}
+      </svg>`;
+    };
     const itemsHtml = list.map((it, idx) => {
       const tracePart = it.isRei || level === 'step1';
       const showHint = it.isRei || level !== 'step3';
       return `
-        <div class="problem-item" style="border-bottom:1px solid #e4e4e7; width:100%; padding:9px 0;">
+        <div class="problem-item" style="border-bottom:1px solid #e4e4e7; width:100%; padding:6px 0;">
           <div class="p-num">${it.isRei ? '<span class="rei-badge">れい</span>' : `(${idx})`}</div>
-          <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-            <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
+            ${lineSvg(it, showHint)}
+            <div style="flex:1;">
               <div style="font-weight:700; margin-bottom:2px;">線対称な図形：${it.shape}</div>
-              <div style="font-size:0.85rem; color:#52525b;">${it.ptA}に対応する点は？</div>
+              <div style="font-size:0.85rem; color:#52525b;">直線アイで 折ったとき 重なる</div>
             </div>
-            <div class="eq-row" style="font-size:1.05rem; gap:10px;">
-              <div>対応する点：<span class="box sm">${cellVal(it.ptB, tracePart)}</span></div>
-              <div>対称の軸の本数：<span class="box xs">${cellVal(it.numAxis, it.isRei)}</span> 本</div>
+            <div class="eq-row" style="font-size:1.05rem; gap:10px; flex-direction:column; align-items:flex-end;">
+              <div>${it.ptA}に対応する点：<span class="box sm" style="width:58px; min-width:58px;">${cellVal(it.ptB, tracePart)}</span></div>
+              <div>対称の軸は ぜんぶで：<span class="box xs">${cellVal(AXES[it.shape], it.isRei)}</span> 本</div>
             </div>
           </div>
-          ${showHint ? `<div style="font-size:0.75rem; color:#71717a; text-align:right;">(折り目をつけたとき重なる)</div>` : ''}
+          ${showHint ? `<div style="font-size:0.75rem; color:#71717a; text-align:right;">(軸から 同じ きょりの 反対がわ)</div>` : ''}
         </div>
       `;
     }).join('');
@@ -7893,7 +8204,13 @@ function addG6Units(unit, level, s, pageLabel) {
       { r: 4, ans: '50.24' },
       { r: 3, ans: '28.26' },
       { r: 6, ans: '113.04' },
-      { r: 8, ans: '200.96' }
+      { r: 8, ans: '200.96' },
+      { r: 1, ans: '3.14' },
+      { r: 7, ans: '153.86' },
+      { r: 9, ans: '254.34' },
+      { r: 11, ans: '379.94' },
+      { r: 12, ans: '452.16' },
+      { r: 20, ans: '1256' }
     ];
     const list = [{ r: 5, ans: '78.5', isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -7979,7 +8296,14 @@ function addG6Units(unit, level, s, pageLabel) {
       { type: '円柱', baseArea: 20, h: 7, vol: 140 },
       { type: '四角柱', baseArea: 30, h: 4, vol: 120 },
       { type: '三角柱', baseArea: 18, h: 5, vol: 90 },
-      { type: '円柱', baseArea: 50, h: 4, vol: 200 }
+      { type: '円柱', baseArea: 50, h: 4, vol: 200 },
+      { type: '四角柱', baseArea: 12, h: 6, vol: 72 },
+      { type: '三角柱', baseArea: 10, h: 8, vol: 80 },
+      { type: '円柱', baseArea: 30, h: 5, vol: 150 },
+      { type: '四角柱', baseArea: 16, h: 3, vol: 48 },
+      { type: '三角柱', baseArea: 21, h: 4, vol: 84 },
+      { type: '円柱', baseArea: 25, h: 6, vol: 150 },
+      { type: '四角柱', baseArea: 35, h: 2, vol: 70 }
     ];
     const list = [{ type: '四角柱', baseArea: 24, h: 5, vol: 120, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -8071,7 +8395,15 @@ function addG6Units(unit, level, s, pageLabel) {
       { a: 8, b: 12, div: 4, sa: 2, sb: 3 },
       { a: 14, b: 21, div: 7, sa: 2, sb: 3 },
       { a: 16, b: 24, div: 8, sa: 2, sb: 3 },
-      { a: 20, b: 25, div: 5, sa: 4, sb: 5 }
+      { a: 20, b: 25, div: 5, sa: 4, sb: 5 },
+      { a: 18, b: 24, div: 6, sa: 3, sb: 4 },
+      { a: 10, b: 25, div: 5, sa: 2, sb: 5 },
+      { a: 21, b: 28, div: 7, sa: 3, sb: 4 },
+      { a: 24, b: 32, div: 8, sa: 3, sb: 4 },
+      { a: 9, b: 15, div: 3, sa: 3, sb: 5 },
+      { a: 30, b: 45, div: 15, sa: 2, sb: 3 },
+      { a: 16, b: 20, div: 4, sa: 4, sb: 5 },
+      { a: 27, b: 36, div: 9, sa: 3, sb: 4 }
     ];
     const list = [{ a: 12, b: 18, div: 6, sa: 2, sb: 3, isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -8240,7 +8572,12 @@ function addG6Units(unit, level, s, pageLabel) {
       { k: 18, rowX: [1, 2, 3, 6], rowY: [18, 9, 6, 3] },
       { k: 12, rowX: [1, 2, 3, 4], rowY: [12, 6, 4, 3] },
       { k: 20, rowX: [1, 2, 4, 5], rowY: [20, 10, 5, 4] },
-      { k: 30, rowX: [1, 2, 3, 5], rowY: [30, 15, 10, 6] }
+      { k: 30, rowX: [1, 2, 3, 5], rowY: [30, 15, 10, 6] },
+      { k: 36, rowX: [1, 2, 3, 4], rowY: [36, 18, 12, 9] },
+      { k: 60, rowX: [1, 2, 3, 4], rowY: [60, 30, 20, 15] },
+      { k: 48, rowX: [1, 2, 3, 4], rowY: [48, 24, 16, 12] },
+      { k: 40, rowX: [1, 2, 4, 5], rowY: [40, 20, 10, 8] },
+      { k: 16, rowX: [1, 2, 4, 8], rowY: [16, 8, 4, 2] }
     ];
     const list = [{ k: 24, rowX: [1, 2, 3, 4], rowY: [24, 12, 8, 6], isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -8405,7 +8742,13 @@ function addG6Units(unit, level, s, pageLabel) {
       { type: '4チームの 総当たり戦 (組み合わせ)', ans: 6, part: '3 ＋', hint: '3 ＋ 2 ＋ 1 ＝ 6通り' },
       { type: '3枚のカード (1,2,3) で作る2けた (並べ方)', ans: 6, part: '3 ×', hint: '3 × 2 ＝ 6通り' },
       { type: '5人から 2人の当番を選ぶ (組み合わせ)', ans: 10, part: '4 ＋', hint: '4＋3＋2＋1 ＝ 10通り' },
-      { type: '4色のうち 2色選ぶ (組み合わせ)', ans: 6, part: '3 ＋', hint: '3＋2＋1 ＝ 6通り' }
+      { type: '4色のうち 2色選ぶ (組み合わせ)', ans: 6, part: '3 ＋', hint: '3＋2＋1 ＝ 6通り' },
+      { type: '5人から 2人選んで 1番と2番を決める (並べ方)', ans: 20, part: '5 ×', hint: '5 × 4 ＝ 20通り' },
+      { type: '3人が 1列に並ぶ (並べ方)', ans: 6, part: '3 ×', hint: '3 × 2 × 1 ＝ 6通り' },
+      { type: '5チームの 総当たり戦 (組み合わせ)', ans: 10, part: '4 ＋', hint: '4＋3＋2＋1 ＝ 10通り' },
+      { type: '4枚のカード (1,2,3,4) で作る2けた (並べ方)', ans: 12, part: '4 ×', hint: '4 × 3 ＝ 12通り' },
+      { type: '6人から 2人の係を選ぶ (組み合わせ)', ans: 15, part: '5 ＋', hint: '5＋4＋3＋2＋1 ＝ 15通り' },
+      { type: '3種類の 果物から 2種類選ぶ (組み合わせ)', ans: 3, part: '2 ＋', hint: '2＋1 ＝ 3通り' }
     ];
     const list = [{ type: '4人から 2人選んで走る順 (並べ方)', ans: 12, part: '4 ×', hint: '4 × 3 ＝ 12通り', isRei: true }];
     const filteredCand = cand.filter(c => {
@@ -8484,20 +8827,129 @@ function wrapSheet(title, pageLabel, gridClass, itemsHtml) {
           for (let p = 0; p < count; p++) {
             const pageLabel = count === 1 ? `（${sIdx + 1} / 3）` : (count > 1 ? `（${p + 1} / ${count}）` : '');
             html += buildSingleSheetHTML(state.unit, st, p, count, pageLabel);
+            if (!renderingAnswerSheet || state.answerMode === 'answers') sheetDescs.push({ unit: state.unit, level: st, p, count });
           }
         });
       } else {
         for (let p = 0; p < count; p++) {
           html += buildSingleSheetHTML(state.unit, state.level, p, count);
+          if (!renderingAnswerSheet || state.answerMode === 'answers') sheetDescs.push({ unit: state.unit, level: state.level, p, count });
         }
       }
       return html;
+    }
+
+    // ====== 1枚を問題でうめる ======
+    // 各単元が作る問題（れい＋数問）だけだと紙の下半分が空くので、
+    // 同じ単元・同じステップで「別の数字」の問題を作り、A4 1枚に入るところまで足す。
+    // 足す問題は 印刷ページ番号から決まる種（seed）で作るので、こたえページとも一致する。
+    let sheetDescs = [];
+    const FILL_LIMIT_MM = 266;   // 印刷の1ページ（A4 − 余白）＝ 約279mm。はみ出さないよう少し残す
+    const FILL_MAX_TRIES = 40;   // 追加の問題を作るために試す 別の種の数
+    const PX_PER_MM = 96 / 25.4;
+
+    function sheetGrid(sheet) {
+      const items = sheet.querySelectorAll('.problem-item');
+      if (!items.length) return null;
+      const grid = items[items.length - 1].parentElement;
+      // 問題がいくつかの まとまりに分かれている紙は、形がくずれるので足さない
+      for (const it of items) if (it.parentElement !== grid) return null;
+      return grid;
+    }
+
+    function itemKey(el) {
+      const c = el.cloneNode(true);
+      c.querySelectorAll('.p-num').forEach(n => n.remove());
+      return c.innerHTML.replace(/\s+/g, ' ').trim();
+    }
+
+    function extraItems(desc, k, answer) {
+      const prevAns = renderingAnswerSheet, prevShow = state.showAnswers;
+      renderingAnswerSheet = answer; state.showAnswers = answer;
+      let html = '';
+      try { html = buildSingleSheetHTML(desc.unit, desc.level, desc.p + 1000 + k, desc.count, ''); }
+      catch (e) { html = ''; }
+      renderingAnswerSheet = prevAns; state.showAnswers = prevShow;
+      currentRenderingStep = desc.level;
+      if (!html) return [];
+      const box = document.createElement('div');
+      box.innerHTML = html;
+      const sheet = box.querySelector('.sheet');
+      const grid = sheet && sheetGrid(sheet);
+      if (!grid) return [];
+      return Array.from(grid.children).filter(el => el.classList.contains('problem-item') && !el.querySelector('.rei-badge'));
+    }
+
+    function contentMM(sheet) {
+      const inner = sheet.firstElementChild;
+      return inner ? inner.getBoundingClientRect().height / PX_PER_MM : 0;
+    }
+
+    function renumber(grid) {
+      let n = 0;
+      Array.from(grid.children).forEach(el => {
+        if (!el.classList.contains('problem-item')) return;
+        if (el.querySelector('.rei-badge')) return;
+        n++;
+        const num = el.querySelector('.p-num');
+        // 「(3) 正方形」のように番号のあとに言葉が続く場合も、番号だけを付けなおす
+        if (num) num.innerHTML = num.innerHTML.replace(/^(\s*)[\(（]\d+[\)）]/, `$1(${n})`);
+      });
+    }
+
+    function fillSheetsToPage() {
+      const container = document.getElementById('sheetsContainer');
+      const sheets = Array.from(container.querySelectorAll('.sheet'));
+      const probs = sheets.filter(s => !s.classList.contains('sheet-answer'));
+      const anss = sheets.filter(s => s.classList.contains('sheet-answer'));
+      sheets.forEach(s => { s.style.zoom = '1'; });
+      sheetDescs.forEach((desc, i) => {
+        // 問題の数は いつも「もんだい」の紙で決める。こたえだけ印刷するときも、
+        // 見えないところに もんだいの紙を作って測り、もんだいだけ印刷したときと同じ数にそろえる
+        let main = probs[i], temp = null;
+        if (!main) {
+          const prevAns = renderingAnswerSheet, prevShow = state.showAnswers;
+          renderingAnswerSheet = false; state.showAnswers = false;
+          const box = document.createElement('div');
+          box.innerHTML = buildSingleSheetHTML(desc.unit, desc.level, desc.p, desc.count);
+          renderingAnswerSheet = prevAns; state.showAnswers = prevShow;
+          temp = box.querySelector('.sheet');
+          if (!temp) return;
+          temp.style.cssText = 'position:absolute; left:-10000px; top:0; zoom:1;';
+          container.appendChild(temp);
+          fitSheetTitles();   // 単元名の折り返しも、印刷する紙と同じにしてから測る
+          main = temp;
+        }
+        const ans = anss[i] || null;
+        const grid = sheetGrid(main);
+        const ansGrid = ans ? sheetGrid(ans) : null;
+        if (grid && contentMM(main) <= FILL_LIMIT_MM) {
+          const seen = new Set(Array.from(grid.children).map(itemKey));
+          let full = false;
+          for (let k = 1; k <= FILL_MAX_TRIES && !full; k++) {
+            const cand = extraItems(desc, k, false);
+            const candAns = ansGrid ? extraItems(desc, k, true) : [];
+            for (let j = 0; j < cand.length; j++) {
+              const key = itemKey(cand[j]);
+              if (seen.has(key)) continue;
+              grid.appendChild(cand[j]);
+              if (contentMM(main) > FILL_LIMIT_MM) { cand[j].remove(); full = true; break; }
+              seen.add(key);
+              if (ansGrid && candAns[j]) ansGrid.appendChild(candAns[j]);
+            }
+          }
+          renumber(grid);
+          if (ansGrid) renumber(ansGrid);
+        }
+        if (temp) temp.remove();
+      });
     }
 
     function render() {
       const count = parseInt(document.getElementById('pageCount').value, 10);
       const container = document.getElementById('sheetsContainer');
       let html = '';
+      sheetDescs = [];
       // 問題は baseSeed から決まるので、同じ引数でもう一度描けば こたえページは もんだいと一致する
       if (state.answerMode !== 'answers') {
         state.showAnswers = false;
@@ -8512,6 +8964,8 @@ function wrapSheet(title, pageLabel, gridClass, itemsHtml) {
       }
       container.innerHTML = html;
       updateCurrentUnitName();
+      fitSheetTitles();
+      fillSheetsToPage();
       fitSheetsToScreen();
     }
 
@@ -8551,7 +9005,8 @@ function wrapSheet(title, pageLabel, gridClass, itemsHtml) {
     }
     const renderOriginal = render;
     render = function () { renderOriginal.apply(this, arguments); fitSheetTitles(); };
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSheetTitles);
+    // 文字（Webフォント）が届くと問題の高さが変わるので、届いたら1枚分を測りなおす
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
     window.addEventListener("beforeprint", fitSheetTitles);
     initFromURL();
     renderSidebar();
