@@ -1288,6 +1288,7 @@
           { id: "clock_diff_from_hour", grade: "2", badge: "2年", name: "なんじなんぷん・あと なんぷんかん③（ちょうどから）" },
           { id: "clock_diff_cross", grade: "2", badge: "2年", name: "なんじなんぷん・あと なんぷんかん④（00分をまたぐ）" },
           { id: "clock_after", grade: "2", badge: "2年", name: "○ふんごの じこく（針をすすめる）" },
+          { id: "clock_after_cross", grade: "2", badge: "2年", name: "○ふんごの じこく②（時をまたぐ）" },
           { id: "clock_before", grade: "2", badge: "2年", name: "○ふんまえの じこく（針をもどす）" },
           { id: "clock_unit_conv", grade: "2", badge: "2年", name: "じかんの たんい（1時間＝60分・1日＝24時間）" }
         ]
@@ -1873,7 +1874,7 @@
       return wrapSheet(title, pageLabel, 'problems-grid single-col', itemsHtml);
     }
 
-    function buildClockShiftSheetHTML(title, pageLabel, pairs, level, isBefore = false) {
+    function buildClockShiftSheetHTML(title, pageLabel, pairs, level, isBefore = false, isCrossHour = false) {
       const showOuter = level === 'step1' || level === 'step2';
       const itemsHtml = pairs.map((p, idx) => {
         const showTraceStart = p.isRei || level === 'step1';
@@ -1881,6 +1882,25 @@
         const arcFrom = isBefore ? p.m2 : p.m1;
         const arcTo = isBefore ? p.m1 : p.m2;
         const labelText = isBefore ? `${p.diff}ふん まえ` : `${p.diff}ふん ご`;
+
+        // 時をまたぐ：「ちょうどまで」と「のこり」に分ける補助（ステップ1・2のみ。ステップ1は「ちょうどまで」だけなぞり）
+        let crossHintHtml = '';
+        if (isCrossHour && (p.isRei || level === 'step1' || level === 'step2')) {
+          const toOclock = 60 - p.m1;
+          const rest = p.diff - toOclock;
+          crossHintHtml = `
+                <div class="duration-sub-hint" style="align-items:flex-end;">
+                  <span style="display:inline-flex; flex-direction:column; align-items:center; gap:2px;">
+                    <span style="font-size:0.66rem; color:#52525b; white-space:nowrap;">ちょうどまで</span>
+                    <span class="box sm dotted">${cellVal(toOclock, p.isRei || level === 'step1')}</span>
+                  </span>
+                  <span>＋</span>
+                  <span style="display:inline-flex; flex-direction:column; align-items:center; gap:2px;">
+                    <span style="font-size:0.66rem; color:#52525b; white-space:nowrap;">のこり</span>
+                    <span class="box sm dotted">${cellVal(rest, p.isRei)}</span>
+                  </span>
+                </div>`;
+        }
 
         return `
           <div class="problem-item" style="width:100%;">
@@ -1925,7 +1945,7 @@
                   <span>じ</span>
                   <span class="box sm">${cellVal(p.m2 === 0 ? '0' : p.m2, p.isRei)}</span>
                   <span>ふん</span>
-                </div>
+                </div>${crossHintHtml}
               </div>
             </div>
           </div>
@@ -2012,6 +2032,25 @@
           pairs.push({ h1, m1, h2: h1, m2: m1 + diff, diff, isRei: false });
         }
         return buildClockShiftSheetHTML('とけい（○ふんごの じこく）', pageLabel, pairs, level, false);
+      }
+
+      if (unit === 'clock_after_cross') {
+        // れい：2じ50ぷんの 20ぷんご → ちょうどまで10＋のこり10 → 3じ10ぷん
+        const rei = { h1: 2, m1: 50, h2: 3, m2: 10, diff: 20, isRei: true };
+        const pairs = [rei];
+        const cand = [];
+        [35, 40, 45, 50, 55].forEach(m1 => {
+          [10, 15, 20, 25, 30].forEach(diff => {
+            if (m1 + diff > 60) cand.push({ m1, diff });
+          });
+        });
+        const filteredCand = cand.filter(c => !(c.m1 === rei.m1 && c.diff === rei.diff));
+        for (let i = 1; i <= 3; i++) {
+          const c = filteredCand[(s * 2 + i * 5) % filteredCand.length]; // 5と14は互いに素：3問が重ならず、分と何分後がばらける
+          const h1 = ((s + i * 3) % 11) + 1;
+          pairs.push({ h1, m1: c.m1, h2: h1 + 1, m2: c.m1 + c.diff - 60, diff: c.diff, isRei: false });
+        }
+        return buildClockShiftSheetHTML('とけい（○ふんごの じこく②・時を またぐ）', pageLabel, pairs, level, false, true);
       }
 
       if (unit === 'clock_before') {
